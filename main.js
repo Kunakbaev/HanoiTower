@@ -2,9 +2,14 @@ var A = [];
 var B = [];
 var C = [];
 var stack = [];
-var num = 12;
+var num;
 var sizeSlider;
 var speedSlider;
+var sizeText;
+var speedText;
+
+var numInput;
+var startButt;
 
 function drawTower(a, b, c) {
   let h = sizeSlider.value();
@@ -57,6 +62,7 @@ function move(from, to) {
 }
 
 function buildTower(count, p1, p2, temp) {
+  //print(count, "count");
   if (count == 0) {
     return;
   }
@@ -66,19 +72,38 @@ function buildTower(count, p1, p2, temp) {
   buildTower(count-1, p2, p1, temp);
 }
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth - 10, windowHeight - 10);
   background(0);
   strokeWeight(4);
-  for (let i = num; i > 0; i--) {
-    A.push(i);
-  }
+  
+  numInput = createInput();
+  numInput.elt.setAttribute("placeholder", "num of circles");
+  numInput.style("background : none");
+  numInput.style("color : white");
+  numInput.style("font : 600 30px arial");
+  numInput.style("border-color : white");
+  numInput.style("border-radius : 10px");
+  numInput.style("border : 5px white solid");
+  let w = numInput.elt.getBoundingClientRect().width;
+  let h = numInput.elt.getBoundingClientRect().height;
+  
+  startButt = createButton("Start");
+  startButt.style("background : none");
+  startButt.style("color : white");
+  startButt.style("border : 5px white solid");
+  startButt.style("border-radius : 10px");
+  startButt.style("font : 600 30px arial");
+  let stButtW = startButt.elt.getBoundingClientRect().width;
+  let stButtH = startButt.elt.getBoundingClientRect().height;
+  startButt.position(width / 2 - stButtW / 2, height / 2 + 5);
+  numInput.position(width / 2 - w / 2, height / 2 - h - 5);
   
   let hanoiText = createSpan("HANOI TOWER");
   hanoiText.style("color: white");
   hanoiText.style("background: none");
   hanoiText.style("font: 600 40px arial");
-  let w = hanoiText.elt.getBoundingClientRect().width;
-  let h = hanoiText.elt.getBoundingClientRect().height;
+  w = hanoiText.elt.getBoundingClientRect().width;
+  h = hanoiText.elt.getBoundingClientRect().height;
   hanoiText.position(width / 2 - w / 2, 10);
   
   let autor = createSpan("by Rodion Kunakbaev");
@@ -88,27 +113,77 @@ function setup() {
   w = autor.elt.getBoundingClientRect().width;
   autor.position(width / 2 - w / 2, 10 + h );
   
-  sizeSlider = createSlider(10, 100, width / (num * 3));
-  h = sizeSlider.elt.getBoundingClientRect().height;
-  sizeSlider.position(0, height - h);
-  speedSlider = createSlider(30, 99, 80);
-  let h1 = speedSlider.elt.getBoundingClientRect().height;
-  speedSlider.position(0, height - h - h1);
-  drawTower(A, B, C);
-  
-  buildTower(num, 'A', 'B', 'C');
+  startButt.mousePressed(function() {
+    print("pressed");
+    if (numInput.value() > 1 && numInput.value() < 16) {
+      print("OK");
+      num = int(numInput.value());
+      sizeSlider = createSlider(10, 100, width / (num * 3));
+      h = sizeSlider.elt.getBoundingClientRect().height;
+      sizeText = createSpan("size : 100.0");
+      sizeText.style("color: white");
+      sizeText.style("background: none");
+      sizeText.style("font: 600 20px arial");
+      w = sizeText.elt.getBoundingClientRect().width;
+      sizeText.position(10, height - h);
+      sizeSlider.position(10 + w + 10, height - h);
+
+
+      speedSlider = createSlider(30, 99, 39);
+      let h1 = speedSlider.elt.getBoundingClientRect().height;
+      speedText = createSpan("speed : 60.0");
+      speedText.style("color: white");
+      speedText.style("background: none");
+      speedText.style("font: 600 20px arial");
+      w = speedText.elt.getBoundingClientRect().width;
+      speedText.position(10, height - h - h1);
+      speedSlider.position(10 + w + 10, height - h - h1);
+      for (let i = num; i > 0; i--) {
+        A.push(i);
+      }
+      drawTower(A, B, C);
+      buildTower(num, 'A', 'B', 'C');
+      sizeSlider.show();
+      speedSlider.show();
+      startButt.hide();
+      numInput.hide();
+    }
+    else {
+      let text = createSpan("num is to big or to low");
+      text.style("background: none");
+      text.style("font : 600 20px arial");
+      text.style("color : white");
+      //text.style("background: none");
+      w = text.elt.getBoundingClientRect().width;
+      text.position(width / 2 - w / 2, height / 2 + 5 + stButtW + 10);
+      setTimeout(function() {
+        text.style("transition : 1s");
+        text.style("color : black");
+        setTimeout(function() {
+          text.remove();
+        }, 1000);
+      }, 1000);
+    }
+  });
 }
 
 function draw() {
-  if (frameCount % (100 - speedSlider.value()) == 0) {
-    let elem = stack.pop();
-    print(elem);
-    if (elem != undefined) {
-      background(0);
-      let from = elem[0];
-      let to = elem[1];
-      move(from, to);
-      drawTower(A, B, C);
-    }
+  if (num != undefined) {
+    numInput.elt.type = "number";
+    numInput.elt.value = numInput.elt.value.replace('/\D/g', '');
+    speedText.elt.innerHTML = "speed : " + (60 / (100 - speedSlider.value() )).toFixed(1);
+
+    sizeText.elt.innerHTML = "size : " + sizeSlider.value().toFixed(1);
+
+    if (frameCount % (100 - speedSlider.value()) == 0) {
+      let elem = stack.pop();
+      if (elem != undefined) {
+        background(0);
+        let from = elem[0];
+        let to = elem[1];
+        move(from, to);
+        drawTower(A, B, C);
+      }
+    } 
   }
 }
