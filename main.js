@@ -66,7 +66,7 @@ function buildTower(count, p1, p2, temp) {
   buildTower(count-1, p2, p1, temp);
 }
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(windowWidth, windowHeight);
   background(0);
   strokeWeight(4);
   for (let i = num; i > 0; i--) {
